@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>获取地址信息</title>
+    <style>
+        #area,#orderNo,#SkuNo {
+            outline: none;
+            border: none;
+            border-top: 10px solid #ccc;
+            font-size: 24px;
+            color: rgb(0, 140, 255);
+            resize: none;
+        }
+        .btn,.btn_warehouse,
+        .btn_Size {
+            display: inline-block;
+            padding: 5px;
+            border-radius: 8px;
+            font-size: 24px;
+            box-shadow: 0 0 5px rgba(0,0,0,.5);
+            margin-left: 20px;
+            cursor: pointer;
+        }
+        .content {
+            display: flex;
+            flex-direction: column;
+            margin-left: 15px;
+        }
+        .content .item {
+            margin-bottom: 10px;
+        }
+        .content .item button {
+            background-color: #cccccc9d;
+            padding: 5px 25px;
+            border: 1px solid #0000009f;
+            cursor: pointer;
+        }
+        .content .item span {
+            display: inline-block;
+            width: 120px;
+        }
+        .content .item input {
+            outline: none;
+            padding: 5px 0;
+            border: none;
+            border-bottom: 1px solid #ccc;
+        }
+        .getWarehouse,
+        .getSize {
+            display: flex;
+            align-items: flex-start;
+            width: 100vw;
+            flex-shrink: 0;
+        }
+        .RESET,.filename {
+            padding: 10px;
+            background-color: rgb(97, 172, 241);
+            color: rgb(255, 255, 255);
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .filename {
+            background-color: yellow;
+            color: #0000009f;
+            font-weight: 700;
+            margin-left: 20px;
+        }
+        .size {
+            background-color: green !important;
+            color: #fff;
+        }
+    </style>
+</head>
+<body style="display: flex; align-items: flex-start; flex-wrap: wrap;">
+    <textarea id="area" placeholder="请输入地址内容" cols="50" rows="12"></textarea>
+    <div class="btn">识别地址</div>
+    <div class="content">
+        <label class="item">
+            <span>买家姓名</span>
+            <input disabled type="text" id="username_ipc" />
+            <button class="copy_btn" id="username">复制姓名</button>
+        </label>
+        <label class="item">
+            <span>买家手机</span>
+            <input disabled type="text" id="phone_ipc" />
+            <button class="copy_btn" id="phone">复制手机</button>
+        </label>
+        <label class="item">
+            <span>买家地址1</span>
+            <input disabled type="text" id="address_ipc" />
+            <button class="copy_btn" id="address">复制地址行1</button>
+        </label>
+        <label class="item">
+            <span>买家居住城市</span>
+            <input disabled type="text" id="city_ipc" />
+            <button class="copy_btn" id="city">复制城市</button>
+        </label>
+        <label class="item">
+            <span>买家居住州</span>
+            <input disabled type="text" id="zero_ipc" />
+            <button class="copy_btn" id="zero">复制州</button>
+        </label>
+        <label class="item">
+            <span>买家国家</span>
+            <input disabled type="text" id="country_ipc" />
+            <button class="copy_btn" id="country">复制国家</button>
+        </label>
+        <label class="item">
+            <span>买家邮编</span>
+            <input disabled type="text" id="zip_ipc" />
+            <button class="copy_btn" id="zipcode">复制邮编</button>
+        </label>
+    </div>
+    <div class="getWarehouse">
+        <textarea id="orderNo" placeholder="请输入订单号" cols="50" rows="5"></textarea>
+        <div class="btn_warehouse  warehouse_btn">分配仓库</div>
+        <div class="content">
+            <label class="item">
+                <span>目标仓库</span>
+                <input disabled type="text" id="warehouse_ipc" />
+                <button class="copy_btn" id="warehouse">复制仓库</button>
+            </label>
+        </div>
+    </div>
+    <div class="getSize">
+        <textarea id="SkuNo" placeholder="请输入货号" cols="50" rows="5"></textarea>
+        <div class="btn_Size  warehouse_btn">尺寸信息</div>
+        <div class="content">
+            <label class="item">
+                <span>长度</span>
+                <input disabled type="text" id="long_ipc" />
+                <button class="copy_btn size" id="zipcode">Length</button>
+            </label>
+            <label class="item">
+                <span>宽度</span>
+                <input disabled type="text" id="short_ipc" />
+                <button class="copy_btn size" id="zipcode">Width</button>
+            </label>
+            <label class="item">
+                <span>高度</span>
+                <input disabled type="text" id="height_ipc" />
+                <button class="copy_btn size" id="zipcode">Height</button>
+            </label>
+            <label class="item">
+                <span>重量</span>
+                <input disabled type="text" id="weight_ipc" />
+                <button class="copy_btn size" id="zipcode">重量</button>
+            </label>
+        </div>
+    </div>
+    <div class="RESET">刷新</div>
+    <div class="filename">获取文件命名</div>
+</body>
+<script>
+    var btn = document.querySelector('.btn')
+    var area = document.getElementById('area')
+    var HuoHaoEl = document.getElementById('SkuNo')
+    var warehouseBtn = document.querySelector('.warehouse_btn')
+    var sizeBtn = document.querySelector('.btn_Size')
+    var warehouseEl = document.querySelector('#orderNo')
+    var warehouse = document.getElementById('warehouse_ipc')
+    var btns = document.querySelectorAll('.copy_btn')
+    var reset = document.querySelector('.RESET')
+    var filenameEl = document.querySelector('.filename')
+    reset.onclick = function() {
+        window.location.reload()
+    }
+    warehouseBtn.onclick = async function() {
+        let warehouse_value = warehouseEl.value
+        // 这个地方要去请求下好像是
+        const result = await fetch('http://192.168.188.47:8889/getWarehouseName', {
+            method: 'POST',
+            body: JSON.stringify({
+                'orderNo': warehouse_value
+            }),
+            headers: {
+                'content-type': 'application/json'
+            }
+        }).then(res => res.json())
+        console.log(result)
+        if (result.statu === 200) {
+            warehouse.value = result.data.tiktokwarehouse
+        }
+    }
+    btn.onclick = function() {
+        let area_value = area.value
+        // 拿到数组
+        let arr = area_value.split('\n')
+        if (arr.length) {
+            let username = arr[0]
+            let userPhone = arr[1]
+            let address = arr[2]
+            let localAddress = arr[3].split(',')
+            let zipCode = arr[4]
+            if (localAddress.length) {
+                // 第一个是城市
+                let city = localAddress[0]
+                // 第二个是州
+                let state = localAddress[1]
+                // 国家
+                let country = localAddress[2]
+                // 填写到对应的地方去
+                document.getElementById('username_ipc').value = username
+                document.getElementById('phone_ipc').value = userPhone
+                document.getElementById('address_ipc').value = address
+                document.getElementById('city_ipc').value = city
+                document.getElementById('zero_ipc').value = state
+                document.getElementById('country_ipc').value = country
+                document.getElementById('zip_ipc').value = zipCode
+            }
+        }
+        console.log(arr)
+    }
+    btns.forEach(item => {
+        item.onclick = async function() {
+            // 拿兄弟
+            let siblingEl = this.previousElementSibling
+            // 拿值
+            let value = siblingEl.value
+            // 粘贴板上
+            await navigator.clipboard.writeText(value)
+        }
+    })
+    sizeBtn.onclick = async function() {
+        // 拿到货号的值,发请求
+        let value = HuoHaoEl.value
+        const result = await fetch('http://192.168.188.47:8889/getSize', {
+            method: 'post',
+            body: JSON.stringify({
+                Sku: value
+            }),
+            headers: {
+                'content-type': 'application/json'
+            }
+        }).then(res => res.json())
+        console.log(result)
+        if (result.statu === 200) {
+            // 拿到数据
+            let data = result.data[0]
+            // 渲染到页面
+            let weight_ipc = document.getElementById('weight_ipc')
+            weight_ipc.value = data.weight
+            let height_ipc = document.getElementById('height_ipc')
+            height_ipc.value = data.height
+            let short_ipc = document.getElementById('short_ipc')
+            short_ipc.value = data.width
+            let long_ipc = document.getElementById('long_ipc')
+            long_ipc.value = data.length
+        }
+    }
+    filenameEl.onclick = async function() {
+        // 发请求
+        const result = await fetch('http://192.168.188.47:8889/getFileName').then(res => res.json())
+        if (result.statu === 200) {
+            // 可以 安排出去
+            navigator.clipboard.writeText(result.data)
+        }
+    }
+</script>
+</html>
